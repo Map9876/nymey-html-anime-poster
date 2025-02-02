@@ -24,3 +24,13 @@ jobs:
           npm install
           npm install node-fetch
           node ./node.js
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+                apiToken: ${{ secrets.CF_TOKEN }}
+                accountId: ${{ secrets.CF_ID }}
+                projectName: nymey
+                directory: cloudflare
+                wranglerVersion: '3'
+
+                
