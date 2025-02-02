@@ -22,7 +22,7 @@ const updateContentJson = async () => {
         }
 
         // 读取现有的 content.json 文件
-        const existingDataPath = path.join(__dirname, 'content.json');
+        const existingDataPath = path.join(__dirname, './html/content.json');
         let existingUrls = new Set();
         let existingData = [];
 
