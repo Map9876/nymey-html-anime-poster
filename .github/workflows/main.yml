@@ -21,7 +21,6 @@ jobs:
           
       - name: Install Dependency       
         run: |
-          npm install
           npm install node-fetch
           node ./node.js
       - name: Publish to Cloudflare Pages
@@ -34,3 +33,18 @@ jobs:
                 wranglerVersion: '3'
 
                 
+      - name: Commit
+        env:
+          GIT_NAME: GitHub Actions[Bot]
+          GIT_EMAIL: map987@users.noreply.github.com
+        
+        run: |
+          git config --local user.name $GIT_NAME
+          git config --local user.email $GIT_EMAIL
+          git pull
+           
+          
+          git reset --mixed origin/main
+          git add .
+          git commit -m "Github action update at `date '+%Y-%m-%d %H:%M:%S'`."
+          git push
