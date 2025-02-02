@@ -30,7 +30,7 @@ jobs:
                 apiToken: ${{ secrets.CF_TOKEN }}
                 accountId: ${{ secrets.CF_ID }}
                 projectName: nymey
-                #directory: 
+                directory: html
                 wranglerVersion: '3'
 
                 
