@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .card img {
+            width: 100%; /* 图片宽度为100% */
+            height: auto;
+        }
+        .card .content {
+            padding: 10px;
+        }
+        .card .content a {
+            display: block;
+            color: #007BFF;
+            text-decoration: none;
+            margin-top: 10px;
+            word-wrap: break-word; /* 防止链接过长 */
+        }
+        .card .content a:hover {
+            text-decoration: underline;
+        }
+        .card .size {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .trailer-urls {
+            margin-top: 20px;
+            width: 80%;
+            max-width: 800px;
+        }
+        .trailer-urls div {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word; /* 防止链接过长 */
+        }
+        .toggle-button {
+            cursor: pointer;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        .toggle-button:hover {
+            transform: scale(1.1);
+        }
+        .toggle-button svg {
+            fill: #fff;
+        }
+        .small-card {
+            width: 150px;
+        }
+        .large-card {
+            width: 300px;
+        }
+        .filter-dropdown {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Gallery</h1>
+    <div class="filter-dropdown">
+        <label for="size-filter">Filter by size:</label>
+        <select id="size-filter">
+            <option value="all">All</option>
+            <option value="5">Greater than 5MB</option>
+            <option value="10">Greater than 10MB</option>
+        </select>
+    </div>
+    <div class="toggle-button" id="toggle-button">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-1-4h2v2h-2zm0-10h2v6h-2z" fill="#fff"/>
+        </svg>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div class="trailer-urls" id="trailer-urls"></div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('./content.json');
+                const data = await response.json();
+                
+                displayImages(data);
+                displayTrailerUrls(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayImages(data) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = ''; // Clear existing content
+            const filterValue = document.getElementById('size-filter').value;
+
+            data.forEach(content => {
+                const { url, size, isTrailer } = content;
+                if (url.includes('mobile')) return;
+                if (isTrailer) return; // Skip trailers for the image gallery
+
+                const sizeMB = parseFloat(size);
+                if (filterValue === '5' && sizeMB <= 5) return;
+                if (filterValue === '10' && sizeMB <= 10) return;
+
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card', 'large-card');
+
+                const imgElement = document.createElement('img');
+                imgElement.src = url;
+
+                const contentElement = document.createElement('div');
+                contentElement.classList.add('content');
+                contentElement.innerHTML = `<a href="${url}" target="_blank">View Image</a>`;
+
+                const sizeElement = document.createElement('div');
+                sizeElement.classList.add('size');
+                sizeElement.textContent = `${size} MB`;
+
+                cardElement.appendChild(imgElement);
+                cardElement.appendChild(contentElement);
+                cardElement.appendChild(sizeElement);
+                gallery.appendChild(cardElement);
+            });
+        }
+
+        function displayTrailerUrls(data) {
+            const trailerUrlsContainer = document.getElementById('trailer-urls');
+            trailerUrlsContainer.innerHTML = '<h2>Trailer URLs</h2>';
+            data.forEach(content => {
+                const { url, size, isTrailer } = content;
+                if (isTrailer) {
+                    const urlElement = document.createElement('div');
+                    urlElement.textContent = `${url} (${size} MB)`;
+                    trailerUrlsContainer.appendChild(urlElement);
+                }
+            });
+        }
+
+        document.getElementById('toggle-button').addEventListener('click', () => {
+            const gallery = document.getElementById('gallery');
+            gallery.classList.toggle('wrap');
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.classList.toggle('small-card');
+                card.classList.toggle('large-card');
+            });
+        });
+
+        document.getElementById('size-filter').addEventListener('change', () => {
+            fetchData();
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>
+
+
+curl 'https://wod.wowow.co.jp/anon/2/path?paths=%5B%5B%22palette%22%2C41248%2C%5B%22name%22%2C%22mbListLayout%22%2C%22badgeOnList%22%2C%22artTypeOnList%22%2C%22keyartUrl%22%5D%5D%2C%5B%22palette%22%2C41248%2C%22objects%22%2C%7B%22from%22%3A19%2C%22to%22%3A59%7D%2C%5B%22id%22%2C%22refId%22%2C%22type%22%2C%22name%22%2C%22shortName%22%2C%22schemaId%22%2C%22copyright%22%2C%22reviewCount%22%2C%22reviewScore%22%2C%22leadEpisodeImage%22%2C%22rental%22%2C%22subscription%22%2C%22edgeEpisodeImage%22%2C%22tallArtwork%22%2C%22leadSeasonId%22%2C%22slug%22%2C%22cardInfo%22%2C%22oap%22%2C%22seriesMeta%22%2C%22seasonMeta%22%2C%22genres%22%2C%22attributes%22%2C%22middleGenres%22%2C%22awKeyb%22%2C%22awKeyc%22%2C%22tvodBadge%22%2C%22image%22%2C%22awPos%22%2C%22thumbnailUrl%22%2C%22leadEpisodeId%22%2C%22edgeEpisodeId%22%2C%22leadEpisode%22%2C%22edgeEpisode%22%2C%22mylisted%22%2C%22canMyList%22%2C%22advertisingId%22%2C%22creatives%22%2C%22url%22%2C%22description%22%5D%5D%2C%5B%22meta%22%2C152113%2C%22seriesEpisodes%22%2C%22episode%22%2C%22f%22%2C%22ena%22%2C%22length%22%5D%2C%5B%22meta%22%2C152113%2C%22seriesEpisodes%22%2C%22episode%22%2C%22f%22%2C%22ena%22%2C%7B%22from%22%3A0%2C%22to%22%3A49%7D%2C%5B%22id%22%2C%22refId%22%2C%22name%22%2C%22schemaId%22%2C%22attributes%22%2C%22genres%22%2C%22middleGenres%22%2C%22shortName%22%2C%22thumbnailUrl%22%2C%22resumePoint%22%2C%22cardInfo%22%2C%22seasonMeta%22%2C%22seriesMeta%22%2C%22publishStartAt%22%2C%22publishEndAt%22%2C%22type%22%2C%22leadSeasonId%22%2C%22titleMetaId%22%2C%22tvodBadge%22%2C%22rental%22%2C%22subscription%22%5D%5D%5D&method=get' \
+  -H 'authority: wod.wowow.co.jp' \
+  -H 'accept: */*' \
+  -H 'accept-language: zh-CN,zh;q=0.9' \
+  -H 'cache-control: max-age=0' \
+  -H 'cookie: dark=true; sid=s%3Am1rX5WWVqzB_0W3OsjmoaTFa6qfcswP3.P7qrG0H2eDVN0hJnzeeXm%2Fh61d17m0xxt3HjkM1IKdY; lch=%22wowow_191%22; nvuid=7947068318074f38a97eb25eeb23f72b; _gcl_au=1.1.772537703.1738440514; _ga=GA1.1.429431235.1738440514; _yjsu_yjad=1738440514.4306b93c-77b4-4bde-b833-9e9528fe25ac; krt.vis=8z7_cdwXnXGBNZP; tfpsi=c473c685-0385-496c-bae7-9a39927110af; rt_storage_writable=true; rt_session_id=a985d5c51af9420f9b63817cff4b45d3; rt_user_id=43cda926596d4d669afabde3129337e0; __gunoad=30efe4bb-f1bc-4518-82af-300728d52ae7; snexid=fc4e8fb7-1a83-4aa2-8672-e6ab46b4f5c7; _ebtd=2.mo7blbxqni.1737315554; _im_id.1021144=e88dee5ac674cd75.1738440540.; _im_ses.1021144=1; _im_id.1021143=17f86f60e2ab3e61.1738440540.; _im_ses.1021143=1; _fbp=fb.2.1738441019684.945151897142039356; ui=%7B%22playerMode%22%3A%22theater%22%7D; _uetsid=534c0b50e0d811efbafccd32bb45554c; _uetvid=534ccc90e0d811ef814d933176842ec3; krt-lv-ss=86fb5e7f-b97b-49c7-b8bf-29ea09e1790a_1738440993042_1738441158017_2; _ga_ZDWWV8R43Z=GS1.1.1738440514.1.1.1738441162.31.0.0' \
+  -H 'if-modified-since: Thu, 01 Jan 1970 00:00:00 GMT' \
+  -H 'referer: https://wod.wowow.co.jp/content/185439' \
+  -H 'sec-ch-ua: "Not-A.Brand";v="99", "Chromium";v="124"' \
+  -H 'sec-ch-ua-mobile: ?1' \
+  -H 'sec-ch-ua-platform: "Android"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36' \
+  -H 'x-requested-with: XMLHttpRequest' \
+  --compressed
