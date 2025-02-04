@@ -20,7 +20,7 @@ const updateContentJson = async () => {
             return;
         }
 
-        const existingDataPath = path.join(__dirname, 'content.json');
+        const existingDataPath = path.join(__dirname, './html/content.json');
         let existingUrls = new Set();
         let existingData = [];
 
