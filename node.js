@@ -6,7 +6,6 @@ const https = require('https');
 
 const updateContentJson = async () => {
     try {
-        // 请求原网站获取HTML
         const htmlResponse = await fetch('https://nymey.com/geo-restriction/', {
             agent: new https.Agent({
                 rejectUnauthorized: false
@@ -21,8 +20,7 @@ const updateContentJson = async () => {
             return;
         }
 
-        // 读取现有的 content.json 文件
-        const existingDataPath = path.join(__dirname, './html/content.json');
+        const existingDataPath = path.join(__dirname, 'content.json');
         let existingUrls = new Set();
         let existingData = [];
 
@@ -32,7 +30,6 @@ const updateContentJson = async () => {
             existingUrls = new Set(existingData.map(item => item.url));
         }
 
-        // 仅提取需要的file_url值和计算文件大小
         const getFileSize = async (url) => {
             try {
                 const res = await fetch(url, { method: 'HEAD' });
@@ -47,9 +44,9 @@ const updateContentJson = async () => {
         let pageContent = 1;
         const extractedData = [];
         let hasMoreData = true;
+        const currentDate = new Date().toISOString().split('T')[0];
 
         while (hasMoreData) {
-            // 使用获取到的access token请求内容数据
             const dataResponse = await fetch('https://apigateway.muvi.com/content', {
                 method: 'POST',
                 headers: {
@@ -98,7 +95,7 @@ const updateContentJson = async () => {
                                 process.exit(0);
                             } else {
                                 const size = await getFileSize(url);
-                                extractedData.push({ url, size, isTrailer: false });
+                                extractedData.push({ url, size, isTrailer: false, date: currentDate });
                             }
                         }
                     }
@@ -111,7 +108,7 @@ const updateContentJson = async () => {
                             process.exit(0);
                         } else {
                             const size = await getFileSize(trailerUrl);
-                            extractedData.push({ url: trailerUrl, size, isTrailer: true });
+                            extractedData.push({ url: trailerUrl, size, isTrailer: true, date: currentDate });
                         }
                     }
                 }
@@ -120,18 +117,24 @@ const updateContentJson = async () => {
             pageContent++;
         }
 
-        // 合并新数据和现有数据并去重
         const combinedData = [...extractedData, ...existingData];
         const uniqueData = Array.from(new Set(combinedData.map(item => item.url)))
             .map(url => combinedData.find(item => item.url === url));
 
-        // 写入更新后的数据到 content.json 文件
         fs.writeFileSync(existingDataPath, JSON.stringify(uniqueData, null, 2));
         console.log('content.json has been updated.');
+
+        const readmePath = path.join(__dirname, 'README.md');
+        const updateMessage = extractedData.length > 0
+            ? `Updated ${extractedData.length} images on ${currentDate}`
+            : `No new images updated on ${currentDate}`;
+
+        const readmeContent = `# Daily Updates\n\n${currentDate}: ${updateMessage}\n`;
+        fs.writeFileSync(readmePath, readmeContent, 'utf-8');
+        console.log('README.md has been updated.');
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
 
-// 手动运行一次更新 content.json
 updateContentJson();
