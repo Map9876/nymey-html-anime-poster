@@ -51,10 +51,8 @@
         }
         .card {
             background-color: #fff;
-            border: none; /* Remove border */
-            box-shadow: none; /* Remove box shadow */
             overflow: hidden;
-            width: calc(50% - 10px); /* Default to two images per row on small screens */
+            flex: 1 1 calc(33.333% - 10px); /* Default to three images per row */
             text-align: center;
             transition: transform 0.2s;
             box-sizing: border-box;
@@ -114,9 +112,9 @@
         .toggle-button svg {
             fill: #fff;
         }
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .card {
-                width: calc(33.333% - 10px); /* Show three images per row on larger screens */
+                flex: 1 1 calc(50% - 10px); /* Show two images per row on smaller screens */
             }
         }
     </style>
@@ -237,4 +235,4 @@
     </script>
 </body>
 </html>
-三个图片一行，最后两个图片会变大，占用三个图片的位置
+三个图片一行，最后两个图片【不】会变大，【不】占用三个图片的位置
