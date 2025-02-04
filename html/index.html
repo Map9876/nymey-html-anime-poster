@@ -19,78 +19,74 @@
         }
         .gallery {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 5px; /* 缩小图片间的间距 */
+            justify-content: center;
             width: 100%;
             max-width: 1200px;
-        }
-        .date-section {
-            background-color: #fff;
-            padding: 10px; /* Reduce padding */
-            width: 100%;
-            box-sizing: border-box;
-            border: none; /* Remove border */
-            box-shadow: none; /* Remove box shadow */
-        }
-        .date-section h2 {
-            margin: 0;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-        }
-        .date-section p {
-            margin: 0;
-            margin-bottom: 10px; /* Reduce margin */
-            font-size: 1em;
-            color: #666;
-        }
-        .cards-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px; /* Reduce gap between images */
-            justify-content: center;
         }
         .card {
             background-color: #fff;
             overflow: hidden;
-            flex: 1 1 calc(33.333% - 10px); /* Default to three images per row */
+            width: calc(33.333% - 5px); /* 每行三张图片 */
+            
+            /*
+            这里如果是：
+            flex: 1 1 calc(33.333% - 10px);
+            三个图片一行，最后两个图片会变大，占用三个图片的位置。
+
+            如果是：
+            width: calc(33.333% - 10px);
+            ，则三个图片一行，最后两个图片【不】会变大，【不】占用三个图片的位置 。就是说一个图片很小，不会撑满屏幕
+            */            
+            
             text-align: center;
             transition: transform 0.2s;
             box-sizing: border-box;
-            margin: 0; /* Remove margin */
-            padding: 0; /* Remove padding */
+            margin: 0; /* 移除外边距 */
+            padding: 0; /* 移除内边距 */
         }
         .card img {
             width: 100%;
             height: auto;
         }
         .card .content {
-            padding: 10px;
+            padding: 2px; /* 调整填充 */
         }
         .card .content a {
             display: block;
             color: #007BFF;
             text-decoration: none;
-            margin-top: 10px;
+            margin: 2px 0; /* 调整间距 */
             word-wrap: break-word;
+            font-size: 0.8em; /* 调整字体大小 */
+            line-height: 1.2; /* 调整行高 */
         }
         .card .content a:hover {
             text-decoration: underline;
         }
         .card .size {
-            margin-top: 5px;
-            font-size: 0.9em;
+            margin: 2px 0; /* 调整间距 */
+            font-size: 0.8em; /* 调整字体大小 */
             color: #555;
         }
+        .date {
+            width: 100%;
+            text-align: left;
+            font-size: 1em; /* 调整字体大小 */
+            color: #333;
+            margin-bottom: 5px; /* 调整底部间距 */
+        }
         .trailer-urls {
-            margin-top: 20px;
+            margin-top: 10px; /* 调整顶部间距 */
             width: 80%;
             max-width: 800px;
         }
         .trailer-urls div {
             background-color: #fff;
             border: 1px solid #ddd;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 5px; /* 调整填充 */
+            margin: 3px 0; /* 调整外边距 */
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             word-wrap: break-word;
         }
@@ -114,7 +110,7 @@
         }
         @media (max-width: 768px) {
             .card {
-                flex: 1 1 calc(50% - 10px); /* Show two images per row on smaller screens */
+                flex: 1 1 calc(50% - 5px); /* 小屏幕上每行两张图片 */
             }
         }
     </style>
@@ -152,7 +148,7 @@
 
         function displayImages(data) {
             const gallery = document.getElementById('gallery');
-            gallery.innerHTML = ''; // Clear existing content
+            gallery.innerHTML = ''; // 清空现有内容
             const filterValue = document.getElementById('size-filter').value;
 
             const groupedData = data.reduce((acc, content) => {
@@ -163,17 +159,15 @@
             }, {});
 
             for (const [date, contents] of Object.entries(groupedData)) {
-                const dateSection = document.createElement('div');
-                dateSection.classList.add('date-section');
-                dateSection.innerHTML = `<h2>${date}</h2><p>${contents.length} images</p>`;
-
-                const cardsContainer = document.createElement('div');
-                cardsContainer.classList.add('cards-container');
+                const dateElement = document.createElement('div');
+                dateElement.classList.add('date');
+                dateElement.textContent = date;
+                gallery.appendChild(dateElement);
 
                 contents.forEach(content => {
                     const { url, size, isTrailer } = content;
                     if (url.includes('mobile')) return;
-                    if (isTrailer) return; // Skip trailers for the image gallery
+                    if (isTrailer) return; // 跳过预告片
 
                     const sizeMB = parseFloat(size);
                     if (filterValue === '5' && sizeMB <= 5) return;
@@ -196,11 +190,8 @@
                     cardElement.appendChild(imgElement);
                     cardElement.appendChild(contentElement);
                     cardElement.appendChild(sizeElement);
-                    cardsContainer.appendChild(cardElement);
+                    gallery.appendChild(cardElement);
                 });
-
-                dateSection.appendChild(cardsContainer);
-                gallery.appendChild(dateSection);
             }
         }
 
@@ -235,4 +226,3 @@
     </script>
 </body>
 </html>
-三个图片一行，最后两个图片【不】会变大，【不】占用三个图片的位置
